@@ -16,10 +16,10 @@ public class PessoaController {
 
     private static final Logger logger = LoggerFactory.getLogger(PessoaController.class);
 
-    private final PessoaService PessoaService;
+    private final PessoaService pessoaService;
 
     public PessoaController(PessoaService PessoaService) {
-        this.PessoaService = PessoaService;
+        this.pessoaService = PessoaService;
     }
 
     // https://localhost:8080/Pessoas/1
@@ -31,7 +31,7 @@ public class PessoaController {
             @RequestParam("size") int size
     ) {
         logger.info("Iniciando listagem de Pessoas");
-        var Pessoas = this.PessoaService.findAll(page, size);
+        var Pessoas = this.pessoaService.findAll(page, size);
         return ResponseEntity.ok(Pessoas);
     }
 
@@ -40,7 +40,7 @@ public class PessoaController {
             @PathVariable("id") long id
     ) {
         logger.info("/Pessoas/" + id);
-        var Pessoa = this.PessoaService.findPessoaById(id);
+        var Pessoa = this.pessoaService.findPessoaById(id);
         return ResponseEntity.ok(Pessoa);
     }
 
@@ -49,7 +49,7 @@ public class PessoaController {
             @RequestBody Pessoa Pessoa
     ) {
         logger.info("POST => /Pessoas/");
-        this.PessoaService.savePessoa(Pessoa);
+        this.pessoaService.savePessoa(Pessoa);
         return ResponseEntity.status(201).build();
     }
 
@@ -59,7 +59,7 @@ public class PessoaController {
             @RequestBody Pessoa Pessoa
     ) {
         logger.info("PUT => /Pessoas/" + id);
-        this.PessoaService.updatePessoa(Pessoa, id);
+        this.pessoaService.updatePessoa(Pessoa, id);
         return ResponseEntity.ok().build();
     }
 
@@ -67,7 +67,7 @@ public class PessoaController {
     public ResponseEntity<Void> deletePessoa(
             @PathVariable("id") Long id
     ) {
-        this.PessoaService.deletePessoa(id);
+        this.pessoaService.deletePessoa(id);
         logger.info("DELETE => /Pessoas/" + id);
         return ResponseEntity.ok().build();
     }
