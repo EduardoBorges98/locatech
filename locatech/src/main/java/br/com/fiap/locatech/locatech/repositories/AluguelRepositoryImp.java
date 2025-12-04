@@ -18,33 +18,43 @@ public class AluguelRepositoryImp implements AluguelRepository {
     @Override
     public Optional<Aluguel> findById(Long id) {
         return this.jdbcClient
-                .sql("SELECT * a.id, a.pessoa_id, a.veiculo_id, a.data_inicio, a.data_fim, a.valor_total, " +
-                        "p.nome AS pessoa_nome, p.cpf AS pessoa_cpf, " +
-                        "v.modelo AS veiculo_modelo, v.placa AS veiculo_placa " +
-                        "FROM alugueis a " +
-                        "INNER JOIN pessoas p on a.pessoa_id = p.id " +
-                        "INNER JOIN veiculos v on a.veiculo_id = v.id " +
-                        " WHERE a.id = :id")
+                .sql("""
+            SELECT
+              a.*,
+              p.nome   AS pessoa_nome,
+              p.cpf    AS pessoa_cpf,
+              v.modelo AS veiculo_modelo,
+              v.placa  AS veiculo_placa
+            FROM alugueis a
+            INNER JOIN pessoas  p ON a.pessoa_id  = p.id
+            INNER JOIN veiculos v ON a.veiculo_id = v.id
+            WHERE a.id = :id
+            """)
                 .param("id", id)
                 .query(Aluguel.class)
                 .optional();
     }
 
+
     @Override
     public List<Aluguel> findAll(int size, int offset) {
         return this.jdbcClient
-                .sql("SELECT * a.id, a.pessoa_id, a.veiculo_id, a.data_inicio, a.data_fim, a.valor_total, " +
-                        "p.nome AS pessoa_nome, p.cpf AS pessoa_cpf, " +
-                        "v.modelo AS veiculo_modelo, v.placa AS veiculo_placa " +
-                        "FROM alugueis a " +
-                        "INNER JOIN pessoas p on a.pessoa_id = p.id " +
-                        "INNER JOIN veiculos v on a.veiculo_id = v.id " +
-                        " LIMIT :size , OFFSET :offset")
+                .sql("""
+                 SELECT
+                     a.id, a.pessoa_id, a.veiculo_id, a.data_inicio, a.data_fim, a.valor_total,
+                     p.nome AS pessoa_nome, p.cpf AS pessoa_cpf,
+                     v.modelo AS veiculo_modelo, v.placa AS veiculo_placa
+                 FROM alugueis a
+                 INNER JOIN pessoas p ON a.pessoa_id = p.id
+                 INNER JOIN veiculos v ON a.veiculo_id = v.id
+                 LIMIT :size OFFSET :offset
+                 """)
                 .param("size", size)
                 .param("offset", offset)
                 .query(Aluguel.class)
                 .list();
     }
+
 
     @Override
     public Integer save(Aluguel aluguel) {
@@ -61,7 +71,7 @@ public class AluguelRepositoryImp implements AluguelRepository {
     @Override
     public Integer update(Aluguel aluguel, Long id) {
         return this.jdbcClient
-                .sql("UPDATE aluguel SET pessoa_id = :pessoa_id, veiculo_id = :veiculo_id, data_inicio = :data_inicio, data_fim = :data_fim, valor_total = :valor_total WHERE id = :id")
+                .sql("UPDATE alugueis SET pessoa_id = :pessoa_id, veiculo_id = :veiculo_id, data_inicio = :data_inicio, data_fim = :data_fim, valor_total = :valor_total WHERE id = :id")
                 .param("id", id)
                 .param("pessoa_id", aluguel.getPessoaId())
                 .param("veiculo_id", aluguel.getVeiculoId())

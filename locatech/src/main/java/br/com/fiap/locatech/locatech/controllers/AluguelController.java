@@ -1,5 +1,6 @@
 package br.com.fiap.locatech.locatech.controllers;
 
+import br.com.fiap.locatech.locatech.dtos.AluguelRequestDTO;
 import br.com.fiap.locatech.locatech.entities.Pessoa;
 import br.com.fiap.locatech.locatech.entities.Aluguel;
 import br.com.fiap.locatech.locatech.services.PessoaService;
@@ -47,9 +48,7 @@ public class AluguelController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> saveAluguel(
-            @RequestBody Aluguel aluguel
-    ) {
+    public ResponseEntity<Void> saveAluguel(@RequestBody AluguelRequestDTO aluguel) {
         logger.info("POST => /alugueis/");
         this.aluguelService.saveAluguel(aluguel);
         return ResponseEntity.status(201).build();
@@ -58,9 +57,9 @@ public class AluguelController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateAluguel(
             @PathVariable("id") Long id,
-            @RequestBody Aluguel aluguel
+            @RequestBody AluguelRequestDTO aluguel
     ) {
-        logger.info("PUT => /alugueis/" + id);
+        logger.info("PUT => /alugueis/{}", id);
         this.aluguelService.updateAluguel(aluguel, id);
         return ResponseEntity.ok().build();
     }

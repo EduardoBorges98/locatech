@@ -1,10 +1,14 @@
 package br.com.fiap.locatech.locatech.services;
 
+import br.com.fiap.locatech.locatech.dtos.AluguelRequestDTO;
 import br.com.fiap.locatech.locatech.entities.Aluguel;
 import br.com.fiap.locatech.locatech.repositories.AluguelRepository;
+import br.com.fiap.locatech.locatech.repositories.VeiculoRepository;
+import br.com.fiap.locatech.locatech.services.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,9 +16,11 @@ import java.util.Optional;
 public class AluguelService {
 
     private final AluguelRepository aluguelRepository;
+    private final VeiculoRepository veiculoRepository;
 
-    public AluguelService(AluguelRepository aluguelRepository) {
+    public AluguelService(AluguelRepository aluguelRepository, VeiculoRepository veiculoRepository) {
         this.aluguelRepository = aluguelRepository;
+        this.veiculoRepository = veiculoRepository;
     }
 
     public List<Aluguel> findAll(int page, int size) {
@@ -24,21 +30,24 @@ public class AluguelService {
     }
 
     public Optional<Aluguel> findAluguelById(Long id) {
-        return this.aluguelRepository.findById(id);
+        return Optional.ofNullable(this.aluguelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Aluguel não encontrado")));
     }
 
-    public void saveAluguel(Aluguel Aluguel) {
-        var save = this.aluguelRepository.save(Aluguel);
-        Assert.state(save == 1, "Erro ao salvar Aluguel" + Aluguel.getPessoaNome());
+    public void saveAluguel(AluguelRequestDTO aluguel) {
+        var aluguelEntity = calculaAluguel(aluguel);
+        var save = this.aluguelRepository.save(aluguelEntity);
+        Assert.state(save == 1, "Erro ao salvar Aluguel" + aluguel.pessoaId());
     }
 
-    public void updateAluguel(Aluguel Aluguel, Long id) {
-        var update = this.aluguelRepository.update(Aluguel, id);
-        if(update == 0) {
+    public void updateAluguel(AluguelRequestDTO aluguel, Long id) {
+        var aluguelEntity = calculaAluguel(aluguel);
+        var update = this.aluguelRepository.update(aluguelEntity, id);
+
+        if (update == 0) {
             throw new RuntimeException("Aluguel não encontrado");
         }
-
     }
+
 
     public void deleteAluguel(Long id) {
         var delete = this.aluguelRepository.delete(id);
@@ -46,4 +55,24 @@ public class AluguelService {
             throw new RuntimeException("Aluguel não encontrado");
         }
     }
+
+    private Aluguel calculaAluguel(AluguelRequestDTO dto) {
+        if (dto.dataInicio() == null || dto.dataFim() == null) {
+            throw new IllegalArgumentException("dataInicio e dataFim são obrigatórias");
+        }
+        if (dto.dataFim().isBefore(dto.dataInicio())) {
+            throw new IllegalArgumentException("dataFim não pode ser antes de dataInicio");
+        }
+
+        var veiculo = veiculoRepository.findById(dto.veiculoId())
+                .orElseThrow(() -> new RuntimeException("Veículo não encontrado"));
+
+        var quantidadeDias = BigDecimal.valueOf(
+                java.time.temporal.ChronoUnit.DAYS.between(dto.dataInicio(), dto.dataFim())
+        );
+
+        var valor = veiculo.getValorDiaria().multiply(quantidadeDias);
+        return new Aluguel(dto, valor);
+    }
+
 }
