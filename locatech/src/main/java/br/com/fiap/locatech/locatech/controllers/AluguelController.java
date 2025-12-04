@@ -5,6 +5,7 @@ import br.com.fiap.locatech.locatech.entities.Pessoa;
 import br.com.fiap.locatech.locatech.entities.Aluguel;
 import br.com.fiap.locatech.locatech.services.PessoaService;
 import br.com.fiap.locatech.locatech.services.AluguelService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +58,7 @@ public class AluguelController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateAluguel(
             @PathVariable("id") Long id,
-            @RequestBody AluguelRequestDTO aluguel
+            @Valid @RequestBody AluguelRequestDTO aluguel
     ) {
         logger.info("PUT => /alugueis/{}", id);
         this.aluguelService.updateAluguel(aluguel, id);
